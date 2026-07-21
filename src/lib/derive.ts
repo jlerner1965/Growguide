@@ -106,6 +106,9 @@ export function riskLevel(weatherRisks: RiskInput[]): { label: string; cls: 'red
 
 // ---- formatting ----
 export const cmToIn = (cm: number) => cm / 2.54;
+export const inToCm = (inches: number) => inches * 2.54;
+/** Convert a height typed in the user's preferred unit into the canonical cm for storage. */
+export const heightInputToCm = (value: number, units: 'imperial' | 'metric') => (units === 'imperial' ? inToCm(value) : value);
 export function fmtHeight(cm: number | null, units: 'imperial' | 'metric') {
   if (cm == null) return '—';
   const v = units === 'imperial' ? cmToIn(cm) : cm;

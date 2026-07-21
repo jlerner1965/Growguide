@@ -8,6 +8,7 @@ import { signOut } from './db/client';
 import { Shell } from './components/Shell';
 import { ComingNext } from './screens/ComingNext';
 import { Dashboard } from './screens/Dashboard';
+import { Journal } from './screens/Journal';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus: false } },
@@ -35,7 +36,7 @@ export function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/my-grow" element={<ComingNext title="My Grow" blurb="Your active grow's details and starting cultivation plan, with an edit flow into Grow Setup." />} />
                 <Route path="/plants" element={<ComingNext title="Plants" blurb="Your full plant roster with height charts, timelines, and add/edit/archive/duplicate/compare." />} />
-                <Route path="/journal" element={<ComingNext title="Daily Journal" blurb="Fast entry logging with tags, quick fields, and filters by plant and tag." />} />
+                <Route path="/journal" element={<Journal />} />
                 <Route path="/weather" element={<ComingNext title="Weather Risks" blurb="NWS alerts, the 7-day outlook, risk cards, and a generated action checklist." />} />
                 <Route path="/reports" element={<ComingNext title="Reports" blurb="Printable weekly, per-plant, and full-season reports." />} />
                 <Route path="/settings" element={<ComingNext title="Settings" blurb="Units, theme, JSON export/restore, and sample-data cleanup." />} />
