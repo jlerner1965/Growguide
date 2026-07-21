@@ -162,3 +162,32 @@ export async function photoUrl(storagePath: string, expiresIn = 3600): Promise<s
   if (error) throw error;
   return data.signedUrl;
 }
+
+/** Batch signed URLs — one call for the whole set, returned as {storage_path: url}. */
+export async function photoUrls(storagePaths: string[], expiresIn = 3600): Promise<Record<string, string>> {
+  if (storagePaths.length === 0) return {};
+  const { data, error } = await supabase.storage.from('grow-photos').createSignedUrls(storagePaths, expiresIn);
+  if (error) throw error;
+  const map: Record<string, string> = {};
+  for (const item of data ?? []) {
+    if (item.path && item.signedUrl) map[item.path] = item.signedUrl;
+  }
+  return map;
+}
+
+/** Delete a photo: remove the storage object first, then the row (RLS-scoped). */
+export async function deletePhoto(photo: Pick<Photo, 'id' | 'storage_path'>): Promise<void> {
+  const rm = await supabase.storage.from('grow-photos').remove([photo.storage_path]);
+  if (rm.error) throw rm.error;
+  const { error } = await supabase.from('photos').delete().eq('id', photo.id);
+  if (error) throw error;
+}
+
+/** Mark one photo as the plant's profile photo, clearing any previous one. */
+export async function setProfilePhoto(plantId: string, photoId: string): Promise<void> {
+  const unset = await supabase.from('photos')
+    .update({ is_profile: false }).eq('plant_id', plantId).eq('is_profile', true);
+  if (unset.error) throw unset.error;
+  const { error } = await supabase.from('photos').update({ is_profile: true }).eq('id', photoId);
+  if (error) throw error;
+}

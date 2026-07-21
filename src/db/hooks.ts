@@ -33,6 +33,17 @@ export function useJournal(growId?: string, filter?: JournalFilter) {
 export function usePhotos(plantId?: string) {
   return useQuery({ queryKey: ['photos', plantId], queryFn: () => api.listPhotos(plantId as string), enabled: !!plantId });
 }
+export function usePhotoUrls(storagePaths: string[]) {
+  const key = [...storagePaths].sort();
+  return useQuery({
+    queryKey: ['photo-urls', key],
+    queryFn: () => api.photoUrls(storagePaths),
+    enabled: storagePaths.length > 0,
+    // Signed URLs expire after 1h; refetch well before that so images never break.
+    staleTime: 45 * 60_000,
+    refetchInterval: 45 * 60_000,
+  });
+}
 
 // ---- mutations ----
 export function useUpdateProfile() {
@@ -109,6 +120,20 @@ export function useUploadPhoto(plantId?: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: { file: File; meta: Parameters<typeof api.uploadPhoto>[1] }) => api.uploadPhoto(v.file, v.meta),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['photos', plantId] }),
+  });
+}
+export function useDeletePhoto(plantId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (photo: Parameters<typeof api.deletePhoto>[0]) => api.deletePhoto(photo),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['photos', plantId] }),
+  });
+}
+export function useSetProfilePhoto(plantId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { plantId: string; photoId: string }) => api.setProfilePhoto(v.plantId, v.photoId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['photos', plantId] }),
   });
 }

@@ -15,6 +15,7 @@ import { GrowSetup } from './screens/GrowSetup';
 import { Weather } from './screens/Weather';
 import { Settings } from './screens/Settings';
 import { Reports } from './screens/Reports';
+import { Photos } from './screens/Photos';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus: false } },
@@ -27,7 +28,6 @@ const PLANNED_BLURBS: Record<string, string> = {
   Training: 'Topping/LST/trellising guidance by stage, plus a simple trellis layout planner.',
   'Pest & Disease': 'A Front Range pest and disease reference library cross-linked to Diagnostics and your journal tags.',
   'Harvest Planner': 'Refines the heuristic harvest window using real trichome and flowering observations, plus a dry/cure checklist.',
-  'Photo Timeline': 'A visual timeline over your photos — per-plant filmstrip and side-by-side date comparison.',
   Encyclopedia: 'Contextual links out to the public Cultivation Compass encyclopedia.',
 };
 
@@ -45,6 +45,7 @@ export function App() {
                 <Route path="/plants" element={<Plants />} />
                 <Route path="/journal" element={<Journal />} />
                 <Route path="/weather" element={<Weather />} />
+                <Route path="/photos" element={<Photos />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/settings" element={<Settings />} />
                 {Object.entries(PLANNED_BLURBS).map(([label, blurb]) => (
