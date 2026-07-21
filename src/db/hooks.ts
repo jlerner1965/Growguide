@@ -16,8 +16,12 @@ export function useGrows() {
 export function useGrow(id?: string) {
   return useQuery({ queryKey: ['grow', id], queryFn: () => api.getGrow(id as string), enabled: !!id });
 }
-export function usePlants(growId?: string) {
-  return useQuery({ queryKey: ['plants', growId], queryFn: () => api.listPlants(growId as string), enabled: !!growId });
+export function usePlants(growId?: string, opts?: { includeArchived?: boolean }) {
+  return useQuery({
+    queryKey: ['plants', growId, opts?.includeArchived ?? false],
+    queryFn: () => api.listPlants(growId as string, opts),
+    enabled: !!growId,
+  });
 }
 export function useJournal(growId?: string, filter?: JournalFilter) {
   return useQuery({
@@ -56,6 +60,20 @@ export function useUpdatePlant(growId?: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: { id: string; patch: Partial<PlantInput> & { archived?: boolean } }) => api.updatePlant(v.id, v.patch),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['plants', growId] }),
+  });
+}
+export function useDeletePlant(growId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.deletePlant(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['plants', growId] }),
+  });
+}
+export function useDuplicatePlant(growId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.duplicatePlant(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['plants', growId] }),
   });
 }

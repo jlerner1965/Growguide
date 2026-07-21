@@ -6,22 +6,7 @@ import { useWeather } from '../weather/useWeather';
 import * as d from '../lib/derive';
 import type { JournalEntry } from '../db/types';
 import type { ReactNode } from 'react';
-
-function Sparkline({ points }: { points: { x: string; y: number }[] }) {
-  if (points.length < 2) return <div className="muted small">Not enough data yet.</div>;
-  const W = 480, H = 120, pad = 24;
-  const ys = points.map((p) => p.y);
-  const y1 = Math.max(...ys) * 1.1 || 1;
-  const px = (i: number) => pad + (i / (points.length - 1)) * (W - pad * 2);
-  const py = (v: number) => H - pad - (v / y1) * (H - pad * 2);
-  const path = points.map((p, i) => `${i ? 'L' : 'M'}${px(i).toFixed(1)} ${py(p.y).toFixed(1)}`).join(' ');
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }} preserveAspectRatio="none">
-      <path d={`${path} L ${px(points.length - 1)} ${H - pad} L ${px(0)} ${H - pad} Z`} fill="var(--sage-100,#e7ede0)" opacity={0.5} />
-      <path d={path} fill="none" stroke="var(--forest,#1f3d2b)" strokeWidth={2} />
-    </svg>
-  );
-}
+import { Sparkline } from '../components/Sparkline';
 
 export function Dashboard() {
   const profile = useProfile();
