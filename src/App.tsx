@@ -16,13 +16,13 @@ import { Weather } from './screens/Weather';
 import { Settings } from './screens/Settings';
 import { Reports } from './screens/Reports';
 import { Photos } from './screens/Photos';
+import { Diagnose } from './screens/Diagnose';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus: false } },
 });
 
 const PLANNED_BLURBS: Record<string, string> = {
-  Diagnostics: 'Symptom-based differential diagnosis with a confidence indicator and the evidence that would rule each cause out — never a single confident guess.',
   Irrigation: 'Watering targets by stage and container size, plus a log view derived from your journal.',
   Nutrition: 'Feeding schedules by stage and approach, deficiency/excess reference, and a feed log derived from your journal.',
   Training: 'Topping/LST/trellising guidance by stage, plus a simple trellis layout planner.',
@@ -44,6 +44,7 @@ export function App() {
                 <Route path="/grow-setup" element={<GrowSetup />} />
                 <Route path="/plants" element={<Plants />} />
                 <Route path="/journal" element={<Journal />} />
+                <Route path="/diagnose" element={<Diagnose />} />
                 <Route path="/weather" element={<Weather />} />
                 <Route path="/photos" element={<Photos />} />
                 <Route path="/reports" element={<Reports />} />

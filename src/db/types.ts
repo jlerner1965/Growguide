@@ -3,6 +3,8 @@
 // no translation. The Phase-1 backup importer (importBackup.ts) is the only
 // place camelCase -> snake_case mapping happens.
 
+import type { DiagnoseInput, Explanation } from '../lib/diagnose';
+
 export type Units = 'imperial' | 'metric';
 export type Theme = 'light' | 'dark';
 export type Stage =
@@ -113,4 +115,18 @@ export interface Photo {
   notes: string | null;
   is_profile: boolean;
   created_at: string;
+}
+
+// Row for migration 0002 (public.diagnoses). inputs/results are jsonb columns;
+// the engine's own types (lib/diagnose) describe their shape.
+export interface Diagnosis {
+  id: string;
+  user_id: string;
+  grow_id: string | null;
+  plant_id: string | null;
+  created_at: string;
+  inputs: DiagnoseInput;
+  results: Explanation[];
+  top_result: string | null;
+  notes: string | null;
 }
