@@ -5,6 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from './api';
 import type { GrowInput, PlantInput, JournalInput, JournalFilter, Profile } from './types';
+import type { DiagnoseInput, Explanation } from '../lib/diagnose';
 
 // ---- queries ----
 export function useProfile() {
@@ -135,5 +136,22 @@ export function useSetProfilePhoto(plantId?: string) {
   return useMutation({
     mutationFn: (v: { plantId: string; photoId: string }) => api.setProfilePhoto(v.plantId, v.photoId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['photos', plantId] }),
+  });
+}
+export function useDiagnoses(plantId?: string) {
+  return useQuery({
+    queryKey: ['diagnoses', plantId ?? null],
+    queryFn: () => api.listDiagnoses(plantId),
+  });
+}
+export function useSaveDiagnosis() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: {
+      inputs: DiagnoseInput;
+      results: Explanation[];
+      meta: { growId?: string | null; plantId?: string | null; topResult?: string | null; notes?: string | null };
+    }) => api.saveDiagnosis(v.inputs, v.results, v.meta),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['diagnoses'] }),
   });
 }

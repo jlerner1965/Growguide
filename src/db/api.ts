@@ -6,8 +6,9 @@
 import { supabase, currentUserId } from './client';
 import type {
   Grow, GrowInput, Plant, PlantInput,
-  JournalEntry, JournalInput, JournalFilter, Photo, Profile,
+  JournalEntry, JournalInput, JournalFilter, Photo, Profile, Diagnosis,
 } from './types';
+import type { DiagnoseInput, Explanation } from '../lib/diagnose';
 
 // ---------- profile ----------
 export async function getProfile(): Promise<Profile> {
@@ -190,4 +191,31 @@ export async function setProfilePhoto(plantId: string, photoId: string): Promise
   if (unset.error) throw unset.error;
   const { error } = await supabase.from('photos').update({ is_profile: true }).eq('id', photoId);
   if (error) throw error;
+}
+
+// ---------- diagnoses (migration 0002) ----------
+export async function saveDiagnosis(
+  inputs: DiagnoseInput,
+  results: Explanation[],
+  meta: { growId?: string | null; plantId?: string | null; topResult?: string | null; notes?: string | null },
+): Promise<Diagnosis> {
+  const { data, error } = await supabase.from('diagnoses').insert({
+    grow_id: meta.growId ?? null,
+    plant_id: meta.plantId ?? null,
+    inputs,
+    results,
+    top_result: meta.topResult ?? null,
+    notes: meta.notes ?? null,
+  }).select('*').single();
+  if (error) throw error;
+  return data as Diagnosis;
+}
+
+/** List saved sessions, newest first. Pass a plantId to scope to one plant. */
+export async function listDiagnoses(plantId?: string | null): Promise<Diagnosis[]> {
+  let q = supabase.from('diagnoses').select('*');
+  if (plantId) q = q.eq('plant_id', plantId);
+  const { data, error } = await q.order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Diagnosis[];
 }
