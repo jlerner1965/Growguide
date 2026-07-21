@@ -224,6 +224,8 @@ th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacin
 td { padding: 11px 16px; border-bottom: 1px solid var(--line); font-size: 13px; vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 
+.demo-note { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--amber); background: var(--amber-bg); padding: 3px 9px; border-radius: 6px; font-weight: 600; }
+
 /* ---- Modal / overlay / toast ---- */
 .overlay { position: fixed; inset: 0; background: rgba(16, 22, 15, 0.5); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 50; overflow-y: auto; }
 .modal { background: var(--surface); border-radius: 14px; width: 100%; max-width: 560px; box-shadow: 0 20px 60px rgba(16, 22, 15, 0.35); }
