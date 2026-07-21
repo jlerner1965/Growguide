@@ -2,8 +2,9 @@
 // App shell: desktop left sidebar + mobile bottom bar, both driven by one
 // nav config so "planned" (not-yet-built) modules stay visually distinct
 // but are never dead links — they route to ComingNext.
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { useProfile } from '../db/hooks';
 
 export interface NavItem { to: string; label: string }
 
@@ -50,6 +51,11 @@ function NavButton({ item, planned }: { item: NavItem; planned?: boolean }) {
 
 export function Shell({ onSignOut }: { onSignOut: () => void }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const profile = useProfile();
+
+  useEffect(() => {
+    if (profile.data?.theme) document.documentElement.setAttribute('data-theme', profile.data.theme);
+  }, [profile.data?.theme]);
 
   const sidebarContent: ReactNode = (
     <>

@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from './api';
-import type { GrowInput, PlantInput, JournalInput, JournalFilter } from './types';
+import type { GrowInput, PlantInput, JournalInput, JournalFilter, Profile } from './types';
 
 // ---- queries ----
 export function useProfile() {
@@ -35,10 +35,24 @@ export function usePhotos(plantId?: string) {
 }
 
 // ---- mutations ----
+export function useUpdateProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (patch: Partial<Pick<Profile, 'display_name' | 'units' | 'theme' | 'experience'>>) => api.updateProfile(patch),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['profile'] }),
+  });
+}
 export function useCreateGrow() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (input: GrowInput) => api.createGrow(input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['grows'] }),
+  });
+}
+export function useDeleteGrow() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.deleteGrow(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['grows'] }),
   });
 }

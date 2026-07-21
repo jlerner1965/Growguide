@@ -13,6 +13,7 @@ import { Plants } from './screens/Plants';
 import { MyGrow } from './screens/MyGrow';
 import { GrowSetup } from './screens/GrowSetup';
 import { Weather } from './screens/Weather';
+import { Settings } from './screens/Settings';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus: false } },
@@ -44,7 +45,7 @@ export function App() {
                 <Route path="/journal" element={<Journal />} />
                 <Route path="/weather" element={<Weather />} />
                 <Route path="/reports" element={<ComingNext title="Reports" blurb="Printable weekly, per-plant, and full-season reports." />} />
-                <Route path="/settings" element={<ComingNext title="Settings" blurb="Units, theme, JSON export/restore, and sample-data cleanup." />} />
+                <Route path="/settings" element={<Settings />} />
                 {Object.entries(PLANNED_BLURBS).map(([label, blurb]) => (
                   <Route
                     key={label}
