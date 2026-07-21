@@ -44,6 +44,22 @@ export function harvestWindow(grow: Grow) {
   return { from: new Date(y, 9, 4), to: new Date(y, 9, 20) }; // ~Oct 4–20
 }
 
+export interface PlanMilestone { label: string; date: Date | null; note: string }
+/** Starting cultivation plan for a new grow — Front Range heuristics, not a promise. */
+export function growPlan(grow: Grow): PlanMilestone[] {
+  const transplant = grow.outdoor_transplant ? new Date(grow.outdoor_transplant) : null;
+  const flower = estimatedFloweringDate(grow);
+  const hw = harvestWindow(grow);
+  const preFlowerScouting = new Date(flower);
+  preFlowerScouting.setDate(preFlowerScouting.getDate() - 21);
+  return [
+    { label: 'Outdoor transplant', date: transplant, note: transplant ? 'Set — hardened-off plants moved outside.' : 'Not set yet — add a transplant date on My Grow.' },
+    { label: 'Pre-flower scouting begins', date: preFlowerScouting, note: 'Heuristic — start checking for early pre-flower signs about 3 weeks before estimated flower onset.' },
+    { label: 'Estimated flower onset', date: flower, note: 'Heuristic based on Front Range daylight, not this grow’s actual photoperiod response. Log a "Flowering observed" entry once you see it.' },
+    { label: 'Estimated harvest window', date: hw.from, note: `Range, not a date: ${fmtShort(hw.from)}–${fmtShort(hw.to)}. Refine with real trichome checks once the Harvest Planner ships.` },
+  ];
+}
+
 export function plantEntries(entries: JournalEntry[], plantId: string) {
   return entries
     .filter((e) => e.plant_id === plantId)

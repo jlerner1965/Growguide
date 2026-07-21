@@ -10,6 +10,8 @@ import { ComingNext } from './screens/ComingNext';
 import { Dashboard } from './screens/Dashboard';
 import { Journal } from './screens/Journal';
 import { Plants } from './screens/Plants';
+import { MyGrow } from './screens/MyGrow';
+import { GrowSetup } from './screens/GrowSetup';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus: false } },
@@ -35,7 +37,8 @@ export function App() {
             <Routes>
               <Route element={<Shell onSignOut={() => void signOut()} />}>
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/my-grow" element={<ComingNext title="My Grow" blurb="Your active grow's details and starting cultivation plan, with an edit flow into Grow Setup." />} />
+                <Route path="/my-grow" element={<MyGrow />} />
+                <Route path="/grow-setup" element={<GrowSetup />} />
                 <Route path="/plants" element={<Plants />} />
                 <Route path="/journal" element={<Journal />} />
                 <Route path="/weather" element={<ComingNext title="Weather Risks" blurb="NWS alerts, the 7-day outlook, risk cards, and a generated action checklist." />} />
