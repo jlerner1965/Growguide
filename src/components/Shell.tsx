@@ -17,6 +17,7 @@ export const NAV_MAIN: NavItem[] = [
   { to: '/weather', label: 'Weather Risks' },
   { to: '/harvest', label: 'Harvest Planner' },
   { to: '/training', label: 'Training' },
+  { to: '/pests', label: 'Pest & Disease' },
   { to: '/photos', label: 'Photo Timeline' },
   { to: '/reports', label: 'Reports' },
   { to: '/settings', label: 'Settings' },
@@ -25,7 +26,6 @@ export const NAV_MAIN: NavItem[] = [
 export const NAV_PLANNED: NavItem[] = [
   { to: '/irrigation', label: 'Irrigation' },
   { to: '/nutrition', label: 'Nutrition' },
-  { to: '/pest-disease', label: 'Pest & Disease' },
   { to: '/encyclopedia', label: 'Encyclopedia' },
 ];
 
