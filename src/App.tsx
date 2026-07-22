@@ -17,6 +17,7 @@ import { Settings } from './screens/Settings';
 import { Reports } from './screens/Reports';
 import { Photos } from './screens/Photos';
 import { Diagnose } from './screens/Diagnose';
+import { Harvest } from './screens/Harvest';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus: false } },
@@ -27,7 +28,6 @@ const PLANNED_BLURBS: Record<string, string> = {
   Nutrition: 'Feeding schedules by stage and approach, deficiency/excess reference, and a feed log derived from your journal.',
   Training: 'Topping/LST/trellising guidance by stage, plus a simple trellis layout planner.',
   'Pest & Disease': 'A Front Range pest and disease reference library cross-linked to Diagnostics and your journal tags.',
-  'Harvest Planner': 'Refines the heuristic harvest window using real trichome and flowering observations, plus a dry/cure checklist.',
   Encyclopedia: 'Contextual links out to the public Cultivation Compass encyclopedia.',
 };
 
@@ -46,6 +46,7 @@ export function App() {
                 <Route path="/journal" element={<Journal />} />
                 <Route path="/diagnose" element={<Diagnose />} />
                 <Route path="/weather" element={<Weather />} />
+                <Route path="/harvest" element={<Harvest />} />
                 <Route path="/photos" element={<Photos />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/settings" element={<Settings />} />
