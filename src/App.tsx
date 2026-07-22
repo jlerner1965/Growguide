@@ -21,13 +21,13 @@ import { Harvest } from './screens/Harvest';
 import { Training } from './screens/Training';
 import { PestDisease } from './screens/PestDisease';
 import { Irrigation } from './screens/Irrigation';
+import { Nutrition } from './screens/Nutrition';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus: false } },
 });
 
 const PLANNED_BLURBS: Record<string, string> = {
-  Nutrition: 'Feeding schedules by stage and approach, deficiency/excess reference, and a feed log derived from your journal.',
   Encyclopedia: 'Contextual links out to the public Cultivation Compass encyclopedia.',
 };
 
@@ -47,6 +47,7 @@ export function App() {
                 <Route path="/diagnose" element={<Diagnose />} />
                 <Route path="/weather" element={<Weather />} />
                 <Route path="/irrigation" element={<Irrigation />} />
+                <Route path="/nutrition" element={<Nutrition />} />
                 <Route path="/harvest" element={<Harvest />} />
                 <Route path="/training" element={<Training />} />
                 <Route path="/pests" element={<PestDisease />} />
