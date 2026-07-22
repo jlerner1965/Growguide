@@ -6,7 +6,6 @@ import { AuthProvider } from './auth/AuthProvider';
 import { AuthGate } from './auth/AuthGate';
 import { signOut } from './db/client';
 import { Shell } from './components/Shell';
-import { ComingNext } from './screens/ComingNext';
 import { Dashboard } from './screens/Dashboard';
 import { Journal } from './screens/Journal';
 import { Plants } from './screens/Plants';
@@ -22,14 +21,11 @@ import { Training } from './screens/Training';
 import { PestDisease } from './screens/PestDisease';
 import { Irrigation } from './screens/Irrigation';
 import { Nutrition } from './screens/Nutrition';
+import { Encyclopedia } from './screens/Encyclopedia';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus: false } },
 });
-
-const PLANNED_BLURBS: Record<string, string> = {
-  Encyclopedia: 'Contextual links out to the public Cultivation Compass encyclopedia.',
-};
 
 export function App() {
   return (
@@ -52,15 +48,9 @@ export function App() {
                 <Route path="/training" element={<Training />} />
                 <Route path="/pests" element={<PestDisease />} />
                 <Route path="/photos" element={<Photos />} />
+                <Route path="/encyclopedia" element={<Encyclopedia />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/settings" element={<Settings />} />
-                {Object.entries(PLANNED_BLURBS).map(([label, blurb]) => (
-                  <Route
-                    key={label}
-                    path={`/${label.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '')}`}
-                    element={<ComingNext title={label} blurb={blurb} />}
-                  />
-                ))}
               </Route>
             </Routes>
           </BrowserRouter>

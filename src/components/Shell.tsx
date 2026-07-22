@@ -1,7 +1,7 @@
 // components/Shell.tsx
 // App shell: desktop left sidebar + mobile bottom bar, both driven by one
-// nav config so "planned" (not-yet-built) modules stay visually distinct
-// but are never dead links — they route to ComingNext.
+// nav config. Every module is now built and routed — there is no longer a
+// "planned" group.
 import { useEffect, useState, type ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useProfile } from '../db/hooks';
@@ -21,12 +21,9 @@ export const NAV_MAIN: NavItem[] = [
   { to: '/training', label: 'Training' },
   { to: '/pests', label: 'Pest & Disease' },
   { to: '/photos', label: 'Photo Timeline' },
+  { to: '/encyclopedia', label: 'Encyclopedia' },
   { to: '/reports', label: 'Reports' },
   { to: '/settings', label: 'Settings' },
-];
-
-export const NAV_PLANNED: NavItem[] = [
-  { to: '/encyclopedia', label: 'Encyclopedia' },
 ];
 
 const BOTTOM_BAR: NavItem[] = [
@@ -36,14 +33,13 @@ const BOTTOM_BAR: NavItem[] = [
   { to: '/weather', label: 'Weather' },
 ];
 
-function NavButton({ item, planned }: { item: NavItem; planned?: boolean }) {
+function NavButton({ item }: { item: NavItem }) {
   return (
     <NavLink
       to={item.to}
       end={item.to === '/'}
-      className={({ isActive }) => `navbtn${planned ? ' planned' : ''}${isActive ? ' active' : ''}`}
+      className={({ isActive }) => `navbtn${isActive ? ' active' : ''}`}
     >
-      {planned && <span className="dot" />}
       {item.label}
     </NavLink>
   );
@@ -65,8 +61,6 @@ export function Shell({ onSignOut }: { onSignOut: () => void }) {
       </div>
       <nav className="shell-nav">
         {NAV_MAIN.map((item) => <NavButton key={item.to} item={item} />)}
-        <div className="nav-group-label">Planned</div>
-        {NAV_PLANNED.map((item) => <NavButton key={item.to} item={item} planned />)}
       </nav>
       <div className="side-foot">
         <button className="btn ghost sm" style={{ color: 'inherit', width: '100%', justifyContent: 'flex-start' }} onClick={onSignOut}>
