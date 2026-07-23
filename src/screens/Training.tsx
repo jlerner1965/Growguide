@@ -4,7 +4,7 @@
 // logging into the journal, an ephemeral trellis planner, and a short history
 // of logged training for the selected plant.
 import { useMemo, useState } from 'react';
-import { useGrows, usePlants, useJournal, useCreateEntry } from '../db/hooks';
+import { useGrows, usePlants, useJournal, useCreateEntry, useProfile } from '../db/hooks';
 import { TECHNIQUES, TRAINING_TAGS, type TechniqueCard } from '../lib/training';
 import { planTrellis, type TrellisInput } from '../lib/trellis';
 import * as d from '../lib/derive';
@@ -92,6 +92,8 @@ export function Training() {
   const plants = usePlants(grow?.id);
   const journal = useJournal(grow?.id);
   const createEntry = useCreateEntry();
+  const profile = useProfile();
+  const units = profile.data?.units ?? 'imperial';
 
   const activePlants = useMemo(() => (plants.data ?? []).filter((p) => !p.archived), [plants.data]);
   const [plantId, setPlantId] = useState('');
@@ -101,7 +103,7 @@ export function Training() {
 
   const entries = journal.data ?? [];
   const currentStage = grow ? d.estimateStage(grow, entries).stage : null;
-  const plan = useMemo(() => planTrellis(trellis), [trellis]);
+  const plan = useMemo(() => planTrellis(trellis, units), [trellis, units]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -181,25 +183,25 @@ export function Training() {
       <div className="card" style={{ padding: 16, marginBottom: 16 }}>
         <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))' }}>
           <TrellisNum label="Plants in the row" v={trellis.plantCount} on={(n) => setTrellis((s) => ({ ...s, plantCount: n }))} />
-          <TrellisNum label="Plant height (cm)" v={trellis.plantHeightCm} on={(n) => setTrellis((s) => ({ ...s, plantHeightCm: n }))} />
-          <TrellisNum label="Plant width (cm)" v={trellis.plantWidthCm} on={(n) => setTrellis((s) => ({ ...s, plantWidthCm: n }))} />
+          <TrellisNum label={`Plant height (${d.lengthUnit(units)})`} v={d.cmToLengthInput(trellis.plantHeightCm, units)} on={(n) => setTrellis((s) => ({ ...s, plantHeightCm: d.heightInputToCm(n, units) }))} />
+          <TrellisNum label={`Plant width (${d.lengthUnit(units)})`} v={d.cmToLengthInput(trellis.plantWidthCm, units)} on={(n) => setTrellis((s) => ({ ...s, plantWidthCm: d.heightInputToCm(n, units) }))} />
           <TrellisNum label="Expected expansion (%)" v={trellis.expectedExpansionPct} on={(n) => setTrellis((s) => ({ ...s, expectedExpansionPct: n }))} />
-          <TrellisNum label="Post spacing (cm)" v={trellis.postSpacingCm} on={(n) => setTrellis((s) => ({ ...s, postSpacingCm: n }))} />
-          <TrellisNum label="Usable post height (cm)" v={trellis.availablePostHeightCm} on={(n) => setTrellis((s) => ({ ...s, availablePostHeightCm: n }))} />
-          <TrellisNum label="Net panel width (cm)" v={trellis.netWidthCm} on={(n) => setTrellis((s) => ({ ...s, netWidthCm: n }))} />
-          <TrellisNum label="Net panel height (cm)" v={trellis.netHeightCm} on={(n) => setTrellis((s) => ({ ...s, netHeightCm: n }))} />
-          <TrellisNum label="Row length (cm)" v={trellis.rowLengthCm} on={(n) => setTrellis((s) => ({ ...s, rowLengthCm: n }))} />
+          <TrellisNum label={`Post spacing (${d.lengthUnit(units)})`} v={d.cmToLengthInput(trellis.postSpacingCm, units)} on={(n) => setTrellis((s) => ({ ...s, postSpacingCm: d.heightInputToCm(n, units) }))} />
+          <TrellisNum label={`Usable post height (${d.lengthUnit(units)})`} v={d.cmToLengthInput(trellis.availablePostHeightCm, units)} on={(n) => setTrellis((s) => ({ ...s, availablePostHeightCm: d.heightInputToCm(n, units) }))} />
+          <TrellisNum label={`Net panel width (${d.lengthUnit(units)})`} v={d.cmToLengthInput(trellis.netWidthCm, units)} on={(n) => setTrellis((s) => ({ ...s, netWidthCm: d.heightInputToCm(n, units) }))} />
+          <TrellisNum label={`Net panel height (${d.lengthUnit(units)})`} v={d.cmToLengthInput(trellis.netHeightCm, units)} on={(n) => setTrellis((s) => ({ ...s, netHeightCm: d.heightInputToCm(n, units) }))} />
+          <TrellisNum label={`Row length (${d.lengthUnit(units)})`} v={d.cmToLengthInput(trellis.rowLengthCm, units)} on={(n) => setTrellis((s) => ({ ...s, rowLengthCm: d.heightInputToCm(n, units) }))} />
         </div>
 
         <div className="grid2" style={{ marginTop: 16 }}>
           <div>
             <div className="eyebrow">Layout</div>
             <ul className="list" style={{ marginTop: 4 }}>
-              <li className="small" style={{ padding: '2px 0' }}>• Total run: <strong>{plan.layout.totalRowLengthCm} cm</strong> ({(plan.layout.totalRowLengthCm / 100).toFixed(1)} m)</li>
-              <li className="small" style={{ padding: '2px 0' }}>• Posts: <strong>{plan.layout.postCount}</strong> at ~{plan.layout.postSpacingCm} cm spacing</li>
+              <li className="small" style={{ padding: '2px 0' }}>• Total run: <strong>{d.fmtLength(plan.layout.totalRowLengthCm, units)}</strong></li>
+              <li className="small" style={{ padding: '2px 0' }}>• Posts: <strong>{plan.layout.postCount}</strong> at ~{d.fmtLength(plan.layout.postSpacingCm, units)} spacing</li>
               <li className="small" style={{ padding: '2px 0' }}>• Net panels: <strong>{plan.layout.netPanelCount}</strong> (one horizontal layer)</li>
-              <li className="small" style={{ padding: '2px 0' }}>• Suggested net height off ground: <strong>{plan.layout.recommendedNetHeightOffGroundCm} cm</strong></li>
-              <li className="small" style={{ padding: '2px 0' }}>• Future canopy per plant: {plan.layout.futureCanopyWidthCm} cm wide × {plan.layout.futureCanopyHeightCm} cm tall</li>
+              <li className="small" style={{ padding: '2px 0' }}>• Suggested net height off ground: <strong>{d.fmtLength(plan.layout.recommendedNetHeightOffGroundCm, units)}</strong></li>
+              <li className="small" style={{ padding: '2px 0' }}>• Future canopy per plant: {d.fmtLength(plan.layout.futureCanopyWidthCm, units)} wide × {d.fmtLength(plan.layout.futureCanopyHeightCm, units)} tall</li>
             </ul>
           </div>
           <div>

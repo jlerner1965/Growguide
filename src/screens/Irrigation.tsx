@@ -5,7 +5,7 @@
 // gallons". A soil-check how-to sits next to every number, because the root
 // zone, not the math, is the real signal.
 import { useEffect, useMemo, useState } from 'react';
-import { useGrows, usePlants, useJournal, useCreateEntry } from '../db/hooks';
+import { useGrows, usePlants, useJournal, useCreateEntry, useProfile } from '../db/hooks';
 import { useWeather } from '../weather/useWeather';
 import { Sparkline } from '../components/Sparkline';
 import {
@@ -19,13 +19,18 @@ interface IrrigationSetup {
   placement: '' | 'Container' | 'Raised bed' | 'In-ground';
   soilType: '' | 'Native soil' | 'Amended soil' | 'Potting/soilless mix' | 'Coco';
   shape: ContainerShape;
+  // Dimensions are stored canonically in cm; the UI enters/shows them in inches
+  // (or cm only if the user's units preference is metric).
   diameterCm: number; lengthCm: number; widthCm: number; heightCm: number;
   emitterCount: number; flowRateGph: number; plannedEventsPerWeek: number;
+  /** For a raised bed: whether it has a known finite volume (else treated like in-ground). */
+  bedHasKnownVolume: boolean;
 }
 const DEFAULT_SETUP: IrrigationSetup = {
   method: '', placement: '', soilType: '', shape: 'cylinder',
   diameterCm: 0, lengthCm: 0, widthCm: 0, heightCm: 0,
   emitterCount: 0, flowRateGph: 0, plannedEventsPerWeek: 0,
+  bedHasKnownVolume: false,
 };
 
 function useLocalSetup(growId: string): [IrrigationSetup, (patch: Partial<IrrigationSetup>) => void] {
@@ -66,11 +71,18 @@ export function Irrigation() {
   const createEntry = useCreateEntry();
   const wx = useWeather(grow?.lat, grow?.lng);
 
+  const profile = useProfile();
+  const units = profile.data?.units ?? 'imperial';
   const activePlants = useMemo(() => (plants.data ?? []).filter((p) => !p.archived), [plants.data]);
   const [plantId, setPlantId] = useState('');
   const [setup, patch] = useLocalSetup(grow?.id ?? '');
   const [runtimeMinutes, setRuntimeMinutes] = useState(30);
   const [manualGal, setManualGal] = useState('');
+
+  // A container volume only makes sense with an actual container (or a raised
+  // bed the user says has a known finite volume). In-ground has no container.
+  const showContainer = setup.placement === 'Container'
+    || (setup.placement === 'Raised bed' && setup.bedHasKnownVolume);
 
   const entries = journal.data ?? [];
 
@@ -116,6 +128,9 @@ export function Irrigation() {
       <input inputMode="decimal" step={opts?.step} value={String(value)} onChange={(e) => on(e.target.value === '' ? 0 : Number(e.target.value))} />
     </label>
   );
+  // A length input shown in the user's units (inches by default) but stored in cm.
+  const lenField = (label: string, cm: number, setCm: (cm: number) => void) =>
+    numField(`${label} (${d.lengthUnit(units)})`, d.cmToLengthInput(cm, units), (v) => setCm(d.heightInputToCm(v, units)));
 
   return (
     <div className="content" style={{ maxWidth: 940 }}>
@@ -153,16 +168,27 @@ export function Irrigation() {
               <option value="">Unset</option><option>Native soil</option><option>Amended soil</option><option>Potting/soilless mix</option><option>Coco</option>
             </select>
           </label>
-          <label className="field" style={{ margin: 0 }}>
-            <span className="lab">Container shape</span>
-            <select value={setup.shape} onChange={(e) => patch({ shape: e.target.value as ContainerShape })}>
-              <option value="cylinder">Round pot</option><option value="rectangular">Rectangular bed/pot</option>
-            </select>
-          </label>
-          {setup.shape === 'cylinder'
-            ? numField('Diameter (cm)', setup.diameterCm, (n) => patch({ diameterCm: n }))
-            : (<>{numField('Length (cm)', setup.lengthCm, (n) => patch({ lengthCm: n }))}{numField('Width (cm)', setup.widthCm, (n) => patch({ widthCm: n }))}</>)}
-          {numField('Medium depth (cm)', setup.heightCm, (n) => patch({ heightCm: n }))}
+          {setup.placement === 'Raised bed' && (
+            <label className="field" style={{ margin: 0, display: 'flex', flexDirection: 'column' }}>
+              <span className="lab">Known finite volume?</span>
+              <label className="small" style={{ display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer', paddingTop: 8 }}>
+                <input type="checkbox" checked={setup.bedHasKnownVolume} onChange={(e) => patch({ bedHasKnownVolume: e.target.checked })} />
+                This bed has a known volume
+              </label>
+            </label>
+          )}
+          {showContainer && (
+            <label className="field" style={{ margin: 0 }}>
+              <span className="lab">Container shape</span>
+              <select value={setup.shape} onChange={(e) => patch({ shape: e.target.value as ContainerShape })}>
+                <option value="cylinder">Round pot</option><option value="rectangular">Rectangular bed/pot</option>
+              </select>
+            </label>
+          )}
+          {showContainer && (setup.shape === 'cylinder'
+            ? lenField('Diameter', setup.diameterCm, (cm) => patch({ diameterCm: cm }))
+            : (<>{lenField('Length', setup.lengthCm, (cm) => patch({ lengthCm: cm }))}{lenField('Width', setup.widthCm, (cm) => patch({ widthCm: cm }))}</>))}
+          {showContainer && lenField('Medium depth', setup.heightCm, (cm) => patch({ heightCm: cm }))}
           {numField('Emitter count', setup.emitterCount, (n) => patch({ emitterCount: n }))}
           {numField('Flow rate (GPH/emitter)', setup.flowRateGph, (n) => patch({ flowRateGph: n }), { step: '0.1' })}
           {numField('Planned events / week', setup.plannedEventsPerWeek, (n) => patch({ plannedEventsPerWeek: n }))}
@@ -187,12 +213,21 @@ export function Irrigation() {
               <input inputMode="decimal" value={manualGal} onChange={(e) => setManualGal(e.target.value)} placeholder={`${emitterGal}`} />
             </label>
           </div>
-          <div>
-            <div className="eyebrow">Container volume</div>
-            <div style={{ fontSize: 22, fontWeight: 700, marginTop: 6 }}>{vol.gallons} gal <span className="small muted" style={{ fontWeight: 400 }}>({vol.liters} L)</span></div>
-            <div className="small muted">Rough water-holding estimate: ~{vol.rootZoneHoldingGalEstimate} gal</div>
-            <div className="small muted" style={{ marginTop: 4 }}>{vol.assumption}</div>
-          </div>
+          {showContainer ? (
+            <div>
+              <div className="eyebrow">Container volume</div>
+              <div style={{ fontSize: 22, fontWeight: 700, marginTop: 6 }}>{d.fmtVolume(vol.gallons, units)}</div>
+              <div className="small muted">Rough water-holding estimate: ~{d.fmtVolume(vol.rootZoneHoldingGalEstimate, units)}</div>
+              <div className="small muted" style={{ marginTop: 4 }}>{vol.assumption}</div>
+            </div>
+          ) : (
+            <div>
+              <div className="eyebrow">In-ground / open bed</div>
+              <div className="small muted" style={{ marginTop: 6 }}>
+                No container, so there's no fixed volume to compute. Irrigation here is about the wetted area and how deep the water penetrates — verified by probing the root zone, not by a gallon figure. The emitter math on the left still applies.
+              </div>
+            </div>
+          )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
           <span className="small muted">Logging <strong>{galToLog} gal</strong>{plantId ? '' : ' to the whole grow'}.</span>

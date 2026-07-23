@@ -59,6 +59,18 @@ describe('planTrellis — honest output', () => {
     expect(text).not.toMatch(/rated (to|for)|holds up to|withstands|load rating of|wind[- ]load capacity of|guaranteed|certified to/);
   });
 
+  it('formats its prose and materials in imperial by default, metric only on request', () => {
+    const imp = planTrellis(BASE);
+    const impText = JSON.stringify(imp).toLowerCase();
+    expect(impText).toMatch(/\bin\b|\bft\b/);      // inches/feet present
+    expect(impText).not.toMatch(/\d+\s?cm\b/);      // no "120 cm" style output
+    expect(imp.materials.find((m) => m.item === 'Trellis netting (total run)')?.unit).toBe('ft');
+
+    const met = planTrellis(BASE, 'metric');
+    expect(JSON.stringify(met).toLowerCase()).toMatch(/\d+\s?cm\b/);
+    expect(met.materials.find((m) => m.item === 'Trellis netting (total run)')?.unit).toBe('m');
+  });
+
   it('substitutes defaults and flags it when inputs are non-positive', () => {
     const plan = planTrellis({ ...BASE, plantCount: 0, plantWidthCm: -5, plantHeightCm: 0 });
     expect(plan.caveats.some((c) => c.toLowerCase().includes('default'))).toBe(true);

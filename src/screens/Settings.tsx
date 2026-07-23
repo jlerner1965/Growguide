@@ -115,8 +115,8 @@ export function Settings() {
           <label className="field">
             <span className="lab">Units</span>
             <select value={draftUnits} onChange={(e) => setUnits(e.target.value as Units)}>
-              <option value="imperial">Imperial (in, °F)</option>
-              <option value="metric">Metric (cm, °C shown as °F still for RH/temp fields)</option>
+              <option value="imperial">Imperial (in / ft, gal, °F, mph) — default</option>
+              <option value="metric">Metric (cm, L, °C)</option>
             </select>
           </label>
           <label className="field">

@@ -121,14 +121,48 @@ export function riskLevel(weatherRisks: RiskInput[]): { label: string; cls: 'red
 }
 
 // ---- formatting ----
+// US imperial is the default and only unit shown, unless the user has chosen
+// 'metric' in their profile. Metric may remain the canonical STORAGE unit
+// (e.g. height_cm) but is never displayed by default.
+export type Units = 'imperial' | 'metric';
+const GAL_PER_L = 0.2641720524;
+
 export const cmToIn = (cm: number) => cm / 2.54;
 export const inToCm = (inches: number) => inches * 2.54;
-/** Convert a height typed in the user's preferred unit into the canonical cm for storage. */
-export const heightInputToCm = (value: number, units: 'imperial' | 'metric') => (units === 'imperial' ? inToCm(value) : value);
-export function fmtHeight(cm: number | null, units: 'imperial' | 'metric') {
+/** Convert a length typed in the user's preferred unit into the canonical cm for storage. */
+export const heightInputToCm = (value: number, units: Units) => (units === 'imperial' ? inToCm(value) : value);
+/** The label for length inputs in the user's units. */
+export const lengthUnit = (units: Units) => (units === 'imperial' ? 'in' : 'cm');
+/** A canonical-cm value rendered as a NUMBER in the user's input unit (for controlled inputs). */
+export function cmToLengthInput(cm: number, units: Units): number {
+  const v = units === 'imperial' ? cmToIn(cm) : cm;
+  return Math.round(v * 10) / 10;
+}
+
+export function fmtHeight(cm: number | null, units: Units) {
   if (cm == null) return '—';
   const v = units === 'imperial' ? cmToIn(cm) : cm;
   return `${v.toFixed(v >= 100 ? 0 : 1)} ${units === 'imperial' ? 'in' : 'cm'}`;
+}
+/** Length for general display: inches, switching to feet once large; cm only if metric. */
+export function fmtLength(cm: number | null, units: Units = 'imperial') {
+  if (cm == null) return '—';
+  if (units === 'metric') return `${Math.round(cm)} cm`;
+  const inches = cm / 2.54;
+  if (inches >= 24) return `${(inches / 12).toFixed(1)} ft`;
+  return `${inches.toFixed(inches < 10 ? 1 : 0)} in`;
+}
+/** Volume for display: gallons by default; litres only if metric. Input is gallons (canonical). */
+export function fmtVolume(gallons: number | null, units: Units = 'imperial') {
+  if (gallons == null) return '—';
+  if (units === 'metric') return `${(gallons / GAL_PER_L).toFixed(1)} L`;
+  return `${Math.round(gallons * 100) / 100} gal`;
+}
+/** Temperature for display: °F by default; °C only if metric. Input is °F (canonical). */
+export function fmtTemp(f: number | null, units: Units = 'imperial') {
+  if (f == null) return '—';
+  if (units === 'metric') return `${Math.round(((f - 32) * 5) / 9)}°C`;
+  return `${Math.round(f)}°F`;
 }
 export const fmtShort = (d: string | Date) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 export const fmtDateTime = (d: string | Date) => new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
