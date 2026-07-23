@@ -16,7 +16,7 @@ const round = (n: number, dp = 2) => Math.round(n * 10 ** dp) / 10 ** dp;
 
 /** How-to shown next to every calculated number — the real source of truth. */
 export const SOIL_CHECK_HOWTO: string[] = [
-  'Probe 5–8 cm into the root zone — is it moist or dry at that depth?',
+  'Probe 2–3 inches into the root zone — is it moist or dry at that depth?',
   'Lift or heft the container — a light pot is dry; a heavy one still holds water.',
   'Look for even wetting across the surface and some drainage from the bottom.',
   'When unsure, wait and re-check — overwatering harms roots as much as underwatering.',

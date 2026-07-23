@@ -49,7 +49,17 @@ const round = (n: number) => Math.round(n);
 const clamp = (n: number, lo: number, hi: number) => Math.min(Math.max(n, lo), hi);
 const pos = (n: number, fallback: number) => (Number.isFinite(n) && n > 0 ? n : fallback);
 
-export function planTrellis(raw: TrellisInput): TrellisPlan {
+// Length rendered in the user's units for the human-readable strings. Numeric
+// layout fields below stay in canonical cm; only the prose is unit-formatted.
+function len(cm: number, units: Units): string {
+  if (units === 'metric') return `${round(cm)} cm`;
+  const inches = cm / 2.54;
+  return inches >= 24 ? `${(inches / 12).toFixed(1)} ft` : `${inches.toFixed(inches < 10 ? 1 : 0)} in`;
+}
+
+export type Units = 'imperial' | 'metric';
+
+export function planTrellis(raw: TrellisInput, units: Units = 'imperial'): TrellisPlan {
   const assumptions: string[] = [];
   const caveats: string[] = [];
 
@@ -71,7 +81,7 @@ export function planTrellis(raw: TrellisInput): TrellisPlan {
   // Size for the FUTURE canopy, not today's.
   const futureCanopyWidthCm = round(plantWidthCm * (1 + expansionPct / 100));
   const futureCanopyHeightCm = round(plantHeightCm * (1 + expansionPct / 100));
-  assumptions.push(`Sized for the future canopy: width ${plantWidthCm}→${futureCanopyWidthCm} cm and height ${plantHeightCm}→${futureCanopyHeightCm} cm at +${expansionPct}% expansion.`);
+  assumptions.push(`Sized for the future canopy: width ${len(plantWidthCm, units)}→${len(futureCanopyWidthCm, units)} and height ${len(plantHeightCm, units)}→${len(futureCanopyHeightCm, units)} at +${expansionPct}% expansion.`);
 
   // Structure must span the longer of "plants at future width" and the row you have.
   const canopyRunCm = plantCount * futureCanopyWidthCm;
@@ -83,7 +93,7 @@ export function planTrellis(raw: TrellisInput): TrellisPlan {
   const postCount = gaps + 1;
   const actualSpacing = round(totalRowLengthCm / gaps);
   const postPositionsCm = Array.from({ length: postCount }, (_, i) => round(i * actualSpacing));
-  assumptions.push(`Target post spacing ${postSpacingCm} cm, evened to ${actualSpacing} cm across the ${totalRowLengthCm} cm run.`);
+  assumptions.push(`Target post spacing ${len(postSpacingCm, units)}, evened to ${len(actualSpacing, units)} across the ${len(totalRowLengthCm, units)} run.`);
 
   // One horizontal support layer (SCROG-style) assumed.
   const netPanelCount = Math.max(1, Math.ceil(totalRowLengthCm / netWidthCm));
@@ -95,17 +105,19 @@ export function planTrellis(raw: TrellisInput): TrellisPlan {
   // Caveats specific to the numbers.
   caveats.push('Planning guidance only — not an engineering sign-off. It does not certify structural strength, wind resistance, or safety. Verify every post, anchor, depth, and spacing against your own site, soil, and local weather before relying on it.');
   if (availablePostHeightCm < futureCanopyHeightCm) {
-    caveats.push(`Posts (${availablePostHeightCm} cm above ground) are shorter than the expected canopy (${futureCanopyHeightCm} cm) — the plant may outgrow the top support. Consider taller posts.`);
+    caveats.push(`Posts (${len(availablePostHeightCm, units)} above ground) are shorter than the expected canopy (${len(futureCanopyHeightCm, units)}) — the plant may outgrow the top support. Consider taller posts.`);
   }
   if (rowLengthCm < canopyRunCm) {
-    caveats.push(`Your row length (${rowLengthCm} cm) is shorter than ${plantCount} plants need at future width (${canopyRunCm} cm) — expect crowding. Lengthen the row or reduce plant count.`);
+    caveats.push(`Your row length (${len(rowLengthCm, units)}) is shorter than ${plantCount} plants need at future width (${len(canopyRunCm, units)}) — expect crowding. Lengthen the row or reduce plant count.`);
   }
 
-  const nettingMeters = Math.round((totalRowLengthCm / 100) * 10) / 10;
+  const nettingRun = units === 'metric'
+    ? { quantity: Math.round((totalRowLengthCm / 100) * 10) / 10, unit: 'm' }
+    : { quantity: Math.round((totalRowLengthCm / 30.48) * 10) / 10, unit: 'ft' };
   const materials: MaterialItem[] = [
-    { item: 'Line posts (T-posts or 2×2 stakes)', quantity: postCount, unit: 'posts', note: `At least ${availablePostHeightCm} cm above ground; set the ends most securely.` },
-    { item: 'Trellis net panels', quantity: netPanelCount, unit: 'panels', note: `${netWidthCm}×${netHeightCm} cm each, one horizontal layer` },
-    { item: 'Trellis netting (total run)', quantity: nettingMeters, unit: 'm' },
+    { item: 'Line posts (T-posts or 2×2 stakes)', quantity: postCount, unit: 'posts', note: `At least ${len(availablePostHeightCm, units)} above ground; set the ends most securely.` },
+    { item: 'Trellis net panels', quantity: netPanelCount, unit: 'panels', note: `${len(netWidthCm, units)} × ${len(netHeightCm, units)} each, one horizontal layer` },
+    { item: 'Trellis netting (total run)', quantity: nettingRun.quantity, unit: nettingRun.unit },
     { item: 'Plant ties / soft clips', quantity: plantCount * 8, unit: 'ties' },
     { item: 'Branch-support stakes', quantity: plantCount * 2, unit: 'stakes' },
     { item: 'End anchors / guy-line kits', quantity: 2, unit: 'kits', note: 'One per row end; add more on long or exposed runs.' },

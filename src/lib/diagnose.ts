@@ -73,7 +73,7 @@ function providedCount(i: DiagnoseInput): number {
 const RULES: Rule[] = [
   {
     label: 'Underwatering (drought stress)',
-    inspectNext: ['Probe 5–8 cm into the root zone — is it dry?', 'Water thoroughly and see if wilting recovers within hours'],
+    inspectNext: ['Probe 2–3 inches into the root zone — is it dry?', 'Water thoroughly and see if wilting recovers within hours'],
     safeActions: ['Water slowly and deeply until you see runoff', 'Add mulch to slow evaporation', 'Give temporary afternoon shade during heat'],
     doNot: ["Don't fertilize a drought-stressed plant until it rehydrates", "Don't assume every wilt means 'needs water' — soggy roots wilt too"],
     whenToGetHelp: "If it doesn't perk up within a day of a deep watering, re-check the root zone before watering again.",
